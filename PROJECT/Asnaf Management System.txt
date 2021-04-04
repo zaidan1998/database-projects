@@ -1,0 +1,103 @@
+CREATE TABLE Branch(
+		branchNo   VARCHAR2(8)   NOT NULL,
+		bName      VARCHAR(10)   NOT NULL,
+		bAddress   VARCHAR(20)   NOT NULL,
+		bTelNo     INTEGER,
+		CONSTRAINT branch_branchNo_pk PRIMARY KEY (branchNo));
+
+INSERT INTO Branch VALUES ('SEL01', 'Selangor', '40100 Shah Alam', 0383142222);
+
+INSERT INTO Branch VALUES ('JHR02', 'Johor', '80000 Johor Bahru', 072282999);
+
+INSERT INTO Branch VALUES ('KDH03', 'Kedah', '05200 Alor Setar', 047331740);
+
+INSERT INTO Branch VALUES ('PRK04', 'Perak', '03000 Ipoh', 052084100);
+
+INSERT INTO Branch VALUES ('MEL05', 'Melaka', '75400 Bukit Palah', 062837416);
+
+CREATE TABLE Staff(
+		staffNo    VARCHAR2(7)   NOT NULL,
+		sName      VARCHAR(20)   NOT NULL,
+		sAddress   VARCHAR(20)   NOT NULL,
+		sTelNo     INTEGER       NOT NULL,
+		position   VARCHAR2(8),
+		branchNo   VARCHAR2(8)   NOT NULL,
+		CONSTRAINT staff_staffNo_pk PRIMARY KEY (staffNo),
+		CONSTRAINT staff_branchNo_fk FOREIGN KEY (branchNo) 
+			   REFERENCES Branch(branchNo) ON DELETE NO ACTION);
+
+CREATE TABLE Donor(
+		donorID    INTEGER      NOT NULL,
+		dName	   VARCHAR(20)  NOT NULL,
+		dAddress   VARCHAR(20),
+		dTelNo	   INTEGER      NOT NULL,
+		staffNo    VARCHAR2(7)  NOT NULL,
+		CONSTRAINT donor_donorID_pk PRIMARY KEY (donorID),
+		CONSTRAINT donor_staffNo_fk FOREIGN KEY (staffNo) 
+			   REFERENCES Staff(staffNo) ON DELETE NO ACTION);
+
+CREATE TABLE Donation(
+		referenceNo VARCHAR(11)   NOT NULL,
+		amount	    DECIMAL(7,2)  NOT NULL,
+		date	    DATE          NOT NULL,
+		donorID	    INTEGER	  NOT NULL,
+		staffNo	    VARCHAR2(7)   NOT NULL,
+		CONSTRAINT  donation_referenceNo_pk PRIMARY KEY (referenceNo),
+		CONSTRAINT  donation_donorID_fk FOREIGN KEY (donorID) 
+			    REFERENCES Donor(donorID) ON DELETE NO ACTION,
+		CONSTRAINT  donation_staffNo_fk FOREIGN KEY (staffNo)
+			    REFERENCES Staff(staffNo) ON DELETE NO ACTION);
+
+CREATE TABLE Asnaf(
+		asnafID	     INTEGER	    NOT NULL,
+		aName	     VARCHAR(20)    NOT NULL,
+		DOB	     DATE	    NOT NULL,
+		aAddress     VARCHAR(20)    NOT NULL,
+		aTelNo	     INTEGER,
+		occupation   VARCHAR(10),
+		salary	     DECIMAL(7,2),
+		gender       CHAR(2)        NOT NULL,
+		asnafType    CHAR(10)	    NOT NULL,
+		staffNo      VARCHAR2(7)    NOT NULL,
+		CONSTRAINT   asnaf_asnafID_pk PRIMARY KEY (asnafID),
+		CONSTRAINT   asnaf_staffNo_fk FOREIGN KEY (staffNo) 
+			     REFERENCES Staff(staffNo) ON DELETE NO ACTION);
+
+INSERT INTO Asnaf Values (681027015175,'Ahmad bin Kasmin',to_date('27/10/1968','dd/mm/yyyy'),'65 Jalan Kg Konggo',
+			  0123456789, 'Clerk', 1000.00, 'Miskin', '4376');
+
+CREATE TABLE Dependent(
+		asnafID	     INTEGER		NOT NULL,
+		name	     VARCHAR(20)  	NOT NULL,
+		age	     CHAR(3)		NOT NULL,
+		gender       CHAR(2)
+		occupation   VARCHAR(10),
+		salary	     DECIMAL(7,2),
+		relationship VARCHAR2(12)   NOT NULL,
+		CONSTRAINT   dependent_pk PRIMARY KEY (name,asnafID),
+		CONSTRAINT   dependent_asnafID_fk FOREIGN KEY (asnafID) 
+	           	     REFERENCES Asnaf(asnafID) ON DELETE CASCADE);
+
+CREATE TABLE MonthlyExpenses(
+		asnafID		INTEGER		NOT NULL,
+		sustenanceCost	DECIMAL(7,2)	NOT NULL,
+		utilityBillCost	DECIMAL(7,2),	
+		schoolingCost	DECIMAL(7,2),
+		medicationCost	DECIMAL(7,2),
+		transportCost	DECIMAL(7,2),
+		accommodateCost	DECIMAL(7,2),
+		PRIMARY KEY (asnafID),
+		FOREIGN KEY (asnafID) REFERENCES Asnaf(asnafID),
+				      ON UPDATE CASCADE ON DELETE CASCADE);
+
+CREATE TABLE Payment(
+		referenceNo	VARCHAR(11)	NOT NULL,
+		amount		DECIMAL(7,2)	NOT NULL,
+		date		DATE		NOT NULL,
+		asnafID		INTEGER		NOT NULL,
+		staffNo		VARCHAR2(7) 	NOT NULL,
+		PRIMARY KEY (referenceNo),
+		FOREIGN KEY (asnafID) REFERENCES Asnaf(asnafID),
+				      ON UPDATE CASCADE ON DELETE NO ACTION,
+		FOREIGN KEY (staffNo) REFERENCES Staff(staffNo),
+				      ON UPDATE CASCADE ON DELETE NO ACTION);
